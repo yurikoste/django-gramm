@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    {% block content %}
+
+    <title></title>
+    <div align="center">
+    <p>You are on the DjangoGramm start page. Please, log in or register using links below to view the feed.</p>
+    <br>
+    <a href="{% url 'test_app:login' %}" class="btn btn-primary">Login</a>
+    <a href="{% url 'test_app:register' %}" class="btn btn-primary">Register</a>
+    </div>
+    {% endblock %}
+</head>
+<body>
+
+</body>
+</html>

@@ -1,0 +1,17 @@
+{% extends 'base_ext.html' %}
+{% load bootstrap4 %}
+{% block content %}
+<div align="center">
+    <head>
+    <link rel="stylesheet" type="text/css" href="../static/css/image_rounded.css">
+    </head>
+    {% if  followings.count > 1 %}
+         <br>You are following {{followings.count}} users:
+    {% else %}
+         <br>You are following {{followings.count}} user:
+    {% endif %}
+    {% for user in followings %}
+        <br> <a href="{% url 'test_app:user_page' user.following_user_id.id %}" class="btn btn-outline-secondary btn-sm">{{user.following_user_id}}</a>
+    {% endfor %}
+</div>
+{% endblock %}

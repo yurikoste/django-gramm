@@ -1,0 +1,23 @@
+{% extends 'base_ext.html' %}
+{% load bootstrap4 %}
+{% block content %}
+<head>
+    <meta charset="UTF-8">
+    <title>DjangoGramm post</title>
+
+</head>
+<body>
+<div align="center">
+{% for image in imgs %}
+<br> <img src="{{ image.img.url }}">
+{% endfor %}
+<br> {{ post.description }}
+    {% if auth_user_id == user.id %}
+<br> <a href="{% url 'test_app:edit_post' post.id %}" class="btn btn-outline-secondary btn-sm">Edit post</a>
+    {% endif %}
+<br> posted: {{post.pub_date}} by <a href="{% url 'test_app:user_page' user.id %}" class="btn btn-outline-secondary btn-sm">{{user.username}}</a>
+</div>
+</body>
+
+{% endblock %}
+</html>

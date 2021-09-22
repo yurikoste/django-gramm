@@ -1,0 +1,168 @@
+{% extends 'base_ext.html' %}
+{% load bootstrap4 %}
+{% load bootstrap_icons %}
+{% block content %}
+
+<!--Register-->
+<div align="center">
+{% csrf_token %}
+{% if user.avatar %}
+<br>  <img class ='circular--portrait' src="{{ user.avatar.url }}" width="250" height="250" alt="" >
+{% endif %}
+<br> First name:	{{ user.first_name }}
+<br> Last name:		{{ user.last_name}}
+<br> email:			{{ user.email }}
+<br> nickname:		{{ user.nick_name }}
+<br> Biography:     {{ user.biography }}
+<br> Join date:		{{ user.reg_date }}
+
+<br>
+    {% if auth_user_id == user_id %}
+        <a href="{% url 'test_app:edit_user_page' %}" class="btn btn-outline-secondary btn-sm">Edit info</a>
+        <a href="{% url 'test_app:add_user_post' %}" class="btn btn-outline-secondary btn-sm">Create Post</a>
+        <a href="{% url 'followering_and_likes:get_followers' %}" class="btn btn-outline-secondary btn-sm">Followers</a>
+        <a href="{% url 'followering_and_likes:get_following' %}" class="btn btn-outline-secondary btn-sm">Following</a>
+    {% endif %}
+    {% if auth_user_id != user_id %}
+        <form action="{% url 'followering_and_likes:follow_unfollow' auth_user_id user_id is_subscribed %}" method="POST" class="subscribe-form" id='{{user.id}}'>
+            {% csrf_token %}
+            <input type="hidden" name="subsription_id" value={{user.id}}>
+                <button type="submit" class="btn btn-info follow-btn{{user.id}}">
+                   {% if is_subscribed %}
+                        Unfollow
+                    {% else %}
+                        Follow
+                    {% endif %}
+                </button>
+                <div class="ui grid">
+                    <div class="column">
+                        <div class="followers-count{{user.id}}"> {{subscribers_count}}</div>
+                    </div>
+                </div>
+        </form>
+    {% endif %}
+<br>
+<br>
+{% for post, likes, is_liked in post_likes %}
+    {% for image in imgs %}
+        {% if image.post_id.id == post.id %}
+            <br> <img src="{{ image.img.url }}" width="400" height="400" alt="" />
+            <br> <a href="{% url 'test_app:show_post' post.id %}" class="btn btn-outline-secondary btn-sm">{{ post.description }}</a>
+                {% if auth_user_id != user_id %}
+                    <form action="{% url 'followering_and_likes:like_unlike_post' post.id auth_user_id%}" method="POST" class="like-form" id='{{post.id}}' >
+                        {% csrf_token %}
+                        <input type="hidden" name="post_id" value={{post.id}}>
+                            <button type="submit" class="btn btn-outline-danger like-btn{{post.id}}">
+                               {% if is_liked %}
+                                    {% bs_icon 'heart-fill' %} {{likes}}
+                                {% else %}
+                                    {% bs_icon 'heart' %} {{likes}}
+                                {% endif %}
+                            </button>
+                    </form>
+                {% else %}
+                    <div class="like-count{{post.id}}"> {{likes}}</div>
+                {% endif %}
+            <br> {{ post.tags }}
+            <br> posted: {{post.pub_date}}
+            <br>
+        {% endif %}
+    {% endfor %}
+{% endfor %}
+</div>
+{% endblock content%}
+
+{% block scripts %}
+<script>
+        $( document ).ready(function() {
+            $('.like-form').submit(function(e) {
+                e.preventDefault()
+                const post_id = $(this).attr('id')
+                const likeText = $(`.like-btn${post_id}`).text()
+                const trim = $.trim(likeText)
+                const url = $(this).attr('action')
+
+                let res;
+                const likes = $(`.like-count${post_id}`).text()
+                const trimCount = parseInt(likes)
+
+                $.ajax({
+                    type: 'POST',
+                    url: url,
+                    data: {
+                        'csrfmiddlewaretoken': $('input[name=csrfmiddlewaretoken]').val(),
+                        'post_id': post_id,
+                    },
+                    success: function (data) {
+                        let result = data
+
+                        if (result['is_liked']) {
+                            $(`.like-btn${post_id}`).html(`<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
+                             fill="currentColor" class="bi bi-heart-fill" viewBox="0 0 16 16">
+                            <path fill-rule="evenodd" d="M8 1.314C12.438-3.248 23.534
+                                4.735 8 15-7.534 4.736 3.562-3.248 8 1.314z"/>
+                            </svg> ${result['likes_count']}`
+                            )
+                        } else {
+                            $(`.like-btn${post_id}`).html(
+                                `<svg xmlns="http://www.w3.org/2000/svg"
+                                   width="16" height="16" fill="currentColor"
+                                    class="bi bi-heart" viewBox="0 0 16 16">
+                                    <path d="m8 2.748-.717-.737C5.6.281 2.514.878 1.4 3.053c-.523 1.023-.641 2.5.314
+                                    4.385.92 1.815 2.834 3.989 6.286 6.357
+                                     3.452-2.368 5.365-4.542 6.286-6.357.955-1.886.838-3.362.314-4.385C13.486.878
+                                    10.4.28 8.717 2.01L8 2.748zM8 15C-7.333 4.868 3.279-3.04 7.824
+                                    1.143c.06.055.119.112.176.171a3.12
+                                    3.12 0 0 1 .176-.17C12.72-3.042 23.333 4.867 8 15z"/>
+                                   </svg> ${result['likes_count']}`
+                            )
+                        }
+
+                        $(`.like-count${post_id}`).text(res)
+                        console.log('success', data)
+                    },
+                    error: function (response) {
+                        console.log('error', response)
+                    }
+                })
+            })
+
+            $('.subscribe-form').submit(function(e) {
+                e.preventDefault()
+                const user_id = $(this).attr('id')
+                const followText = $(`.follow-btn${user_id}`).text()
+                const trim = $.trim(followText)
+                const url = $(this).attr('action')
+
+                let res;
+                const followers = $(`.followers-count${user_id}`).text()
+                const trimCount = parseInt(followers)
+                console.log(trimCount)
+
+                $.ajax({
+                    type: 'POST',
+                    url: url,
+                    data: {
+                        'csrfmiddlewaretoken': $('input[name=csrfmiddlewaretoken]').val(),
+                        'user_id': user_id,
+                    },
+                    success: function (response) {
+                        if (trim === 'Unfollow') {
+                            $(`.follow-btn${user_id}`).text('Follow')
+                            res = trimCount - 1
+                        } else {
+                            $(`.follow-btn${user_id}`).text('Unfollow')
+                            res = trimCount + 1
+                        }
+
+                        $(`.followers-count${user_id}`).text(res)
+                        console.log('success', response)
+                    },
+                    error: function (response) {
+                        console.log('error', response)
+                    }
+                })
+            })
+        });
+</script>
+{% endblock scripts %}

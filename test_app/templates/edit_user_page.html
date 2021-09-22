@@ -1,0 +1,17 @@
+{% extends 'base_ext.html' %}
+{% load bootstrap4 %}
+{% load crispy_forms_tags %}
+{% block content %}
+<div align="center">
+<br/>
+    <div class="form-group w-25">
+<form action="" method=POST enctype="multipart/form-data">
+    {% csrf_token %}
+     {{ form|crispy }}
+    <br/>    {{user.email}}
+    <br/>   <input type="submit" value="Update" class="btn btn-secondary">
+    <input type="submit" value="Cancel" class="btn btn-secondary" name="cancel_edit_user_page">
+</form>
+    </div>
+</div>
+{% endblock %}

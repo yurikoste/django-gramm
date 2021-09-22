@@ -1,0 +1,18 @@
+{% extends 'base_ext.html' %}
+{% load bootstrap4 %}
+{% block content %}
+
+<div align="center">
+<div class="form-group w-25">
+<form action="" method=POST enctype="multipart/form-data">
+    {% csrf_token %}
+    {{ form_img.as_p }}
+    {% csrf_token %}
+    {{ form.as_p }}
+    <br/>    {{user.email}}
+    <br/>   <input type="submit" value="Update" class="btn btn-secondary">
+    <input type="submit" value="Cancel" class="btn btn-secondary" name="cancel_edit_user_post">
+</form>
+</div>
+</div>
+{% endblock %}
